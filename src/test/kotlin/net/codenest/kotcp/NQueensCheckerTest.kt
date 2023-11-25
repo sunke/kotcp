@@ -20,6 +20,12 @@ class NQueensCheckerTest {
         getSolutions(NQueensCheckerDfsPrune(n), n, count)
     }
 
+    @ParameterizedTest
+    @CsvSource("10, 724", "11, 2680", "12, 14200")
+    fun `get solutions with TinyCSP`(n: Int, count: Int) {
+        getSolutions(NQueensCheckerTinyCSP(n), n, count)
+    }
+
     private fun getSolutions(checker: NQueensChecker, n: Int, count: Int) {
         val solutions: List<Array<Int>>
 
