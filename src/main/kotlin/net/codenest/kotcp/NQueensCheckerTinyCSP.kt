@@ -1,7 +1,6 @@
 package net.codenest.kotcp
 
 import java.util.*
-import kotlin.collections.ArrayList
 
 /**
  * edX Constraint Programming: https://learning.edx.org/course/course-v1:LouvainX+Louv31x+3T2023/home
@@ -12,11 +11,11 @@ class NQueensCheckerTinyCSP(override val n: Int) : NQueensChecker {
 
     override fun solve(): List<Array<Int>> {
         val csp = TinyCSP()
-        val q = Array(n) {csp.makeVariable(n)}
+        val q = Array(n) { csp.makeVariable(n) }
 
         for (i in 0..<n) {
             for (j in i + 1..<n) {
-                csp.notEqual(q[i], q[j], 0)      // not on the same line
+                csp.notEqual(q[i], q[j])      // not on the same line
                 csp.notEqual(q[i], q[j], i - j)  // not on the same left diagonal
                 csp.notEqual(q[i], q[j], j - i)  // not the same right diagonal
             }
@@ -39,7 +38,7 @@ class TinyCSP {
         return x
     }
 
-    fun notEqual(x: Variable, y: Variable, offset: Int) {
+    fun notEqual(x: Variable, y: Variable, offset: Int = 0) {
         constraints.add(NotEqual(x, y, offset))
         fixPoint()
     }
@@ -51,7 +50,7 @@ class TinyCSP {
         }
     }
 
-    fun dfs(solutions: java.util.ArrayList<Array<Int>>) {
+    fun dfs(solutions: ArrayList<Array<Int>>) {
         val notFixedVar = variables.firstOrNull { !it.domain.isFixed() }
         if (notFixedVar == null) {
             // all variables are fixed, a solution is found
@@ -66,7 +65,8 @@ class TinyCSP {
                 notFixedVar.domain.fix(v)
                 fixPoint()
                 dfs(solutions)
-            } catch (_: Exception) {}
+            } catch (_: Exception) {
+            }
 
             restoreDomains(backups)
 
@@ -75,16 +75,15 @@ class TinyCSP {
                 notFixedVar.domain.remove(v)
                 fixPoint()
                 dfs(solutions)
-            } catch (_: Exception) {}
+            } catch (_: Exception) {
+            }
         }
     }
 
     private fun backupDomains(): List<Domain> {
-        val backup = java.util.ArrayList<Domain>()
-        for (x in variables) {
-            backup.add(x.domain.clone())
+        return variables.map {
+            v -> v.domain.clone()
         }
-        return backup
     }
 
     private fun restoreDomains(backups: List<Domain>) {
@@ -97,14 +96,14 @@ class TinyCSP {
 abstract class Constraint {
 
     /**
-     * Propagate the constraint and return true if any value could be removed.
+     * Propagate the constraint
+     *
+     * @return true if any value could be removed.
      */
     abstract fun propagate(): Boolean
 }
 
-class NotEqual(private val x: Variable, private val y: Variable, private val offset: Int) : Constraint() {
-
-    constructor(x: Variable, y: Variable) : this(x, y, 0)
+class NotEqual(private val x: Variable, private val y: Variable, private val offset: Int = 0) : Constraint() {
 
     override fun propagate(): Boolean {
         if (x.domain.isFixed()) {
@@ -130,9 +129,9 @@ class Domain(n: Int) {
 
     fun isFixed() = size() == 1
 
-    fun min() = values.nextSetBit(0)
+    private fun size() = values.cardinality()
 
-    fun size() = values.cardinality()
+    fun min() = values.nextSetBit(0)
 
     fun remove(v: Int): Boolean {
         if (v in 0..<values.size() && values[v]) {
