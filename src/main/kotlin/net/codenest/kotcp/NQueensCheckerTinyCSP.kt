@@ -56,27 +56,36 @@ class TinyCSP {
             // all variables are fixed, a solution is found
             solutions.add(variables.map { it.domain.min() }.toTypedArray())
         } else {
-            val v = notFixedVar.domain.min() // get unfixed value
+            val valueToFix = notFixedVar.domain.min()
 
             val backups = backupDomains()
-
-            // access left branch
-            try {
-                notFixedVar.domain.fix(v)
-                fixPoint()
-                dfs(solutions)
-            } catch (_: Exception) {
-            }
-
+            dfsLeft(valueToFix, notFixedVar, solutions)
             restoreDomains(backups)
+            dfsRight(valueToFix, notFixedVar, solutions)
+        }
+    }
 
-            // access right branch
-            try {
-                notFixedVar.domain.remove(v)
-                fixPoint()
-                dfs(solutions)
-            } catch (_: Exception) {
-            }
+    private fun dfsRight(
+        value: Int,
+        variable: Variable,
+        solutions: ArrayList<Array<Int>>
+    ) {
+        variable.domain.remove(value)
+        if (variable.domain.size() > 0) {
+            fixPoint()
+            dfs(solutions)
+        }
+    }
+
+    private fun dfsLeft(
+        value: Int,
+        variable: Variable,
+        solutions: ArrayList<Array<Int>>
+    ) {
+        if (variable.domain.contain(value)) {
+            variable.domain.fix(value)
+            fixPoint()
+            dfs(solutions)
         }
     }
 
@@ -129,30 +138,30 @@ class Domain(n: Int) {
 
     fun isFixed() = size() == 1
 
-    private fun size() = values.cardinality()
-
     fun min() = values.nextSetBit(0)
 
+    fun contain(v: Int): Boolean = v in 0..<values.size() && values[v]
+
     fun remove(v: Int): Boolean {
-        if (v in 0..<values.size() && values[v]) {
+        if (contain(v)) {
             values.clear(v)
-            if (size() == 0) {
-                throw RuntimeException("Inconsistency")
-            }
             return true
         }
         return false
     }
 
-    fun fix(v: Int) {
-        if (!values[v]) {
-            throw RuntimeException("Inconsistency")
+    fun fix(v: Int): Boolean {
+        if (contain(v)) {
+            values.clear()
+            values.set(v)
+            return true
         }
-        values.clear()
-        values.set(v)
+        return false
     }
 
     fun clone(): Domain {
         return Domain(values.clone() as BitSet)
     }
+
+    fun size() = values.cardinality()
 }
