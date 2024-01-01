@@ -1,4 +1,4 @@
-package net.codenest.kotcp
+package net.codenest.kotcp.examples
 
 import java.util.*
 

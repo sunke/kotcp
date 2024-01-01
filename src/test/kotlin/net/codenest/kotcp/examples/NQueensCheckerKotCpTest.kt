@@ -1,5 +1,9 @@
-package net.codenest.kotcp
+package net.codenest.kotcp.examples
 
+import net.codenest.kotcp.examples.tinycsp.NQueensChecker
+import net.codenest.kotcp.examples.tinycsp.NQueensCheckerDfs
+import net.codenest.kotcp.examples.tinycsp.NQueensCheckerDfsPrune
+import net.codenest.kotcp.examples.tinycsp.NQueensCheckerTinyCSP
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
@@ -24,6 +28,12 @@ class NQueensCheckerTest {
     @CsvSource("10, 724", "11, 2680", "12, 14200")
     fun `get solutions with TinyCSP`(n: Int, count: Int) {
         getSolutions(NQueensCheckerTinyCSP(n), n, count)
+    }
+
+    @ParameterizedTest
+    @CsvSource("10, 724", "11, 2680", "12, 14200")
+    fun `get solutions with KotCP`(n: Int, count: Int) {
+        getSolutions(NQueensCheckerKotCP(n), n, count)
     }
 
     private fun getSolutions(checker: NQueensChecker, n: Int, count: Int) {
