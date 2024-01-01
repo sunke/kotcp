@@ -1,5 +1,9 @@
 package net.codenest.kotcp.examples
 
+import net.codenest.kotcp.engine.Variable
+import net.codenest.kotcp.engine.constraint.Constraint
+import net.codenest.kotcp.engine.constraint.NotEqual
+import net.codenest.kotcp.examples.tinycsp.NQueensChecker
 import java.util.*
 
 /**
@@ -7,10 +11,10 @@ import java.util.*
  *
  * Solve N Queens problem with a tiny constraint satisfaction problem solver.
  */
-class NQueensCheckerTinyCSP(override val n: Int) : NQueensChecker {
+class NQueensCheckerKotCP(override val n: Int) : NQueensChecker {
 
-    override fun solve(): List<Array<Int>> {
-        val csp = TinyCSP()
+    override fun solve(): List<List<Int>> {
+        val csp = TinyKotCP()
         val q = Array(n) { csp.makeVariable(n) }
 
         for (i in 0..<n) {
@@ -21,14 +25,14 @@ class NQueensCheckerTinyCSP(override val n: Int) : NQueensChecker {
             }
         }
 
-        val solutions = ArrayList<Array<Int>>()
+        val solutions = ArrayList<List<Int>>()
         csp.dfs(solutions)
 
         return solutions
     }
 }
 
-class TinyCSP {
+private class TinyKotCP {
     private val constraints = LinkedList<Constraint>()
     private val variables = LinkedList<Variable>()
 
@@ -50,118 +54,44 @@ class TinyCSP {
         }
     }
 
-    fun dfs(solutions: ArrayList<Array<Int>>) {
+    fun dfs(solutions: ArrayList<List<Int>>) {
+        if (variables.any { it.domain.size() == 0 }) {
+            return
+        }
+
         val notFixedVar = variables.firstOrNull { !it.domain.isFixed() }
         if (notFixedVar == null) {
             // all variables are fixed, a solution is found
-            solutions.add(variables.map { it.domain.min() }.toTypedArray())
+            solutions.add(variables.map { it.domain.min() })
         } else {
             val valueToFix = notFixedVar.domain.min()
 
             val backups = backupDomains()
-            dfsLeft(valueToFix, notFixedVar, solutions)
+
+            notFixedVar.domain.fix(valueToFix)
+            fixPoint()
+            dfs(solutions)
+
             restoreDomains(backups)
-            dfsRight(valueToFix, notFixedVar, solutions)
+
+            notFixedVar.domain.remove(valueToFix)
+            if (notFixedVar.domain.size() > 0) {
+                fixPoint()
+                dfs(solutions)
+            }
         }
     }
 
-    private fun dfsRight(
-        value: Int,
-        variable: Variable,
-        solutions: ArrayList<Array<Int>>
-    ) {
-        variable.domain.remove(value)
-        if (variable.domain.size() > 0) {
-            fixPoint()
-            dfs(solutions)
-        }
-    }
-
-    private fun dfsLeft(
-        value: Int,
-        variable: Variable,
-        solutions: ArrayList<Array<Int>>
-    ) {
-        if (variable.domain.contain(value)) {
-            variable.domain.fix(value)
-            fixPoint()
-            dfs(solutions)
-        }
-    }
-
-    private fun backupDomains(): List<Domain> {
+    private fun backupDomains(): List<Int> {
         return variables.map {
-            v -> v.domain.clone()
+            v -> v.domain.size()
         }
     }
 
-    private fun restoreDomains(backups: List<Domain>) {
-        variables.zip(backups).forEach { (variable, backup) ->
-            variable.domain = backup
+    private fun restoreDomains(backups: List<Int>) {
+        variables.zip(backups).forEach { (variable, rs) ->
+            variable.domain.restore(rs)
         }
     }
 }
 
-abstract class Constraint {
-
-    /**
-     * Propagate the constraint
-     *
-     * @return true if any value could be removed.
-     */
-    abstract fun propagate(): Boolean
-}
-
-class NotEqual(private val x: Variable, private val y: Variable, private val offset: Int = 0) : Constraint() {
-
-    override fun propagate(): Boolean {
-        if (x.domain.isFixed()) {
-            return y.domain.remove(x.domain.min() - offset)
-        }
-        if (y.domain.isFixed()) {
-            return x.domain.remove(y.domain.min() + offset)
-        }
-        return false
-    }
-}
-
-class Variable(n: Int) {
-    var domain = Domain(n)
-}
-
-class Domain(n: Int) {
-    private var values = BitSet(n).apply { this.set(0, n) }
-
-    constructor(dom: BitSet) : this(0) {
-        values = dom
-    }
-
-    fun isFixed() = size() == 1
-
-    fun min() = values.nextSetBit(0)
-
-    fun contain(v: Int): Boolean = v in 0..<values.size() && values[v]
-
-    fun remove(v: Int): Boolean {
-        if (contain(v)) {
-            values.clear(v)
-            return true
-        }
-        return false
-    }
-
-    fun fix(v: Int): Boolean {
-        if (contain(v)) {
-            values.clear()
-            values.set(v)
-            return true
-        }
-        return false
-    }
-
-    fun clone(): Domain {
-        return Domain(values.clone() as BitSet)
-    }
-
-    fun size() = values.cardinality()
-}

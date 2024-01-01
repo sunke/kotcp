@@ -1,7 +1,5 @@
 package net.codenest.kotcp.examples.tinycsp
 
-import net.codenest.kotcp.examples.KDomain
-import net.codenest.kotcp.examples.KVariable
 import java.util.*
 
 /**
@@ -11,7 +9,7 @@ import java.util.*
  */
 class NQueensCheckerTinyCSP(override val n: Int) : NQueensChecker {
 
-    override fun solve(): List<Array<Int>> {
+    override fun solve(): List<List<Int>> {
         val csp = TinyCSP()
         val q = Array(n) { csp.makeVariable(n) }
 
@@ -23,7 +21,7 @@ class NQueensCheckerTinyCSP(override val n: Int) : NQueensChecker {
             }
         }
 
-        val solutions = ArrayList<Array<Int>>()
+        val solutions = ArrayList<List<Int>>()
         csp.dfs(solutions)
 
         return solutions
@@ -32,15 +30,15 @@ class NQueensCheckerTinyCSP(override val n: Int) : NQueensChecker {
 
 class TinyCSP {
     private val constraints = LinkedList<Constraint>()
-    private val variables = LinkedList<KVariable>()
+    private val variables = LinkedList<Variable>()
 
-    fun makeVariable(domSize: Int): KVariable {
-        val x = KVariable(domSize)
+    fun makeVariable(domSize: Int): Variable {
+        val x = Variable(domSize)
         variables.add(x)
         return x
     }
 
-    fun notEqual(x: KVariable, y: KVariable, offset: Int = 0) {
+    fun notEqual(x: Variable, y: Variable, offset: Int = 0) {
         constraints.add(NotEqual(x, y, offset))
         fixPoint()
     }
@@ -52,11 +50,15 @@ class TinyCSP {
         }
     }
 
-    fun dfs(solutions: ArrayList<Array<Int>>) {
+    fun dfs(solutions: ArrayList<List<Int>>) {
+        if (variables.any {it.domain.size() == 0}) {
+            return
+        }
+
         val notFixedVar = variables.firstOrNull { !it.domain.isFixed() }
         if (notFixedVar == null) {
             // all variables are fixed, a solution is found
-            solutions.add(variables.map { it.domain.min() }.toTypedArray())
+            solutions.add(variables.map { it.domain.min() })
         } else {
             val valueToFix = notFixedVar.domain.min()
 
@@ -69,8 +71,8 @@ class TinyCSP {
 
     private fun dfsRight(
         value: Int,
-        variable: KVariable,
-        solutions: ArrayList<Array<Int>>
+        variable: Variable,
+        solutions: ArrayList<List<Int>>
     ) {
         variable.domain.remove(value)
         if (variable.domain.size() > 0) {
@@ -81,8 +83,8 @@ class TinyCSP {
 
     private fun dfsLeft(
         value: Int,
-        variable: KVariable,
-        solutions: ArrayList<Array<Int>>
+        variable: Variable,
+        solutions: ArrayList<List<Int>>
     ) {
         if (variable.domain.contain(value)) {
             variable.domain.fix(value)
@@ -91,13 +93,13 @@ class TinyCSP {
         }
     }
 
-    private fun backupDomains(): List<KDomain> {
+    private fun backupDomains(): List<Domain> {
         return variables.map {
             v -> v.domain.clone()
         }
     }
 
-    private fun restoreDomains(backups: List<KDomain>) {
+    private fun restoreDomains(backups: List<Domain>) {
         variables.zip(backups).forEach { (variable, backup) ->
             variable.domain = backup
         }
@@ -114,7 +116,7 @@ abstract class Constraint {
     abstract fun propagate(): Boolean
 }
 
-class NotEqual(private val x: KVariable, private val y: KVariable, private val offset: Int = 0) : Constraint() {
+class NotEqual(private val x: Variable, private val y: Variable, private val offset: Int = 0) : Constraint() {
 
     override fun propagate(): Boolean {
         if (x.domain.isFixed()) {
@@ -128,7 +130,7 @@ class NotEqual(private val x: KVariable, private val y: KVariable, private val o
 }
 
 class Variable(n: Int) {
-    var domain = KDomain(n)
+    var domain = Domain(n)
 }
 
 class Domain(n: Int) {
@@ -161,8 +163,8 @@ class Domain(n: Int) {
         return false
     }
 
-    fun clone(): KDomain {
-        return KDomain(values.clone() as BitSet)
+    fun clone(): Domain {
+        return Domain(values.clone() as BitSet)
     }
 
     fun size() = values.cardinality()

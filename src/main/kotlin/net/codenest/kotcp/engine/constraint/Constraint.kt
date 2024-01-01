@@ -1,6 +1,6 @@
 package net.codenest.kotcp.engine.constraint
 
-private abstract class Constraint {
+abstract class Constraint {
 
     /**
      * Propagate the constraint

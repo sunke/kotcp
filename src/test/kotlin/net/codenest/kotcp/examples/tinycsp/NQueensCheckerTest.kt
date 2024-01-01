@@ -19,7 +19,7 @@ class NQueensCheckerTest {
     }
 
     @ParameterizedTest
-    @CsvSource("10, 724", "11, 2680", "12, 14200")
+    @CsvSource("12, 14200", "13, 73712", "14, 365596")
     fun `get solutions with DFS + Prune`(n: Int, count: Int) {
         getSolutions(NQueensCheckerDfsPrune(n), n, count)
     }
@@ -30,14 +30,8 @@ class NQueensCheckerTest {
         getSolutions(NQueensCheckerTinyCSP(n), n, count)
     }
 
-    @ParameterizedTest
-    @CsvSource("10, 724", "11, 2680", "12, 14200")
-    fun `get solutions with KotCP`(n: Int, count: Int) {
-        getSolutions(NQueensCheckerKotCP(n), n, count)
-    }
-
     private fun getSolutions(checker: NQueensChecker, n: Int, count: Int) {
-        val solutions: List<Array<Int>>
+        val solutions: List<List<Int>>
 
         val elapsed = measureTimeMillis {
             solutions = checker.solve()

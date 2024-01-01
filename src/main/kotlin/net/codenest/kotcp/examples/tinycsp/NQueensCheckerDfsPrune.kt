@@ -10,15 +10,15 @@ import kotlin.math.abs
 class NQueensCheckerDfsPrune(override val n: Int) : NQueensChecker {
     private val q = Array(n) { 0 }
 
-    override fun solve(): List<Array<Int>> {
-        val solutions = mutableListOf<Array<Int>>()
+    override fun solve(): List<List<Int>> {
+        val solutions = mutableListOf<List<Int>>()
         dfs(0, solutions)
-        return solutions.toList()
+        return solutions
     }
 
-    private fun dfs(idx: Int, solutions: MutableList<Array<Int>>) {
+    private fun dfs(idx: Int, solutions: MutableList<List<Int>>) {
         if (idx == n) {
-            solutions.add(q.copyOf())
+            solutions.add(q.copyOf().toList())
         } else {
             for (i in 0..<n) {
                 q[idx] = i
