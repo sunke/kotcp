@@ -8,6 +8,6 @@ class Variable(n: Int) {
     var domain: IntDomain = SparseSetIntDomain(0, n - 1)
 
     override fun toString(): String {
-        return "{ $domain }"
+        return "{ $domain | ${domainChangeListeners.size} listeners }"
     }
 }

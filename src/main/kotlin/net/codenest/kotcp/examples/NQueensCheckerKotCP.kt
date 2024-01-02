@@ -55,7 +55,7 @@ private class TinyKotCP {
         }
     }
 
-    fun dfs(solutions: ArrayList<List<Int>>) {
+    fun dfs(solutions: MutableList<List<Int>>) {
         if (variables.any { it.domain.size() == 0 }) {
             return
         }
