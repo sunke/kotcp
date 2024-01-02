@@ -46,7 +46,7 @@ private class TinyKotCP {
         constraints.add(NotEqual(x, y, offset))
     }
 
-    private fun propagate(constraints: ArrayList<Constraint>) {
+    private fun propagate(constraints: List<Constraint>) {
         var noChange = false
         val onChangeConstraints = ArrayList(constraints)
         while (!noChange) {

@@ -9,5 +9,5 @@ abstract class Constraint {
      *
      * @return true if any value could be removed.
      */
-    abstract fun propagate(onChangeConstraints: ArrayList<Constraint>): Boolean
+    abstract fun propagate(onChangeConstraints: MutableList<Constraint>): Boolean
 }
