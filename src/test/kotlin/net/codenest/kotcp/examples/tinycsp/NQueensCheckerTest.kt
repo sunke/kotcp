@@ -19,6 +19,7 @@ class NQueensCheckerTest {
     }
 
     @ParameterizedTest
+    //@CsvSource("10, 724", "11, 2680", "12, 14200")
     @CsvSource("12, 14200", "13, 73712", "14, 365596")
     fun `get solutions with DFS + Prune`(n: Int, count: Int) {
         getSolutions(NQueensCheckerDfsPrune(n), n, count)

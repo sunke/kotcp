@@ -19,7 +19,7 @@ class NQueensCheckerKotCP(override val n: Int) : NQueensChecker {
 
         for (i in 0..<n) {
             for (j in i + 1..<n) {
-                csp.notEqual(q[i], q[j])      // not on the same line
+                csp.notEqual(q[i], q[j])               // not on the same line
                 csp.notEqual(q[i], q[j], i - j)  // not on the same left diagonal
                 csp.notEqual(q[i], q[j], j - i)  // not the same right diagonal
             }
@@ -44,13 +44,14 @@ private class TinyKotCP {
 
     fun notEqual(x: Variable, y: Variable, offset: Int = 0) {
         constraints.add(NotEqual(x, y, offset))
-        fixPoint()
     }
 
-    private fun fixPoint() {
-        var fix = false
-        while (!fix) {
-            fix = constraints.none { it.propagate() }
+    private fun propagate(constraints: ArrayList<Constraint>) {
+        var noChange = false
+        val onChangeConstraints = ArrayList(constraints)
+        while (!noChange) {
+            val onChangeConstraintsBefore = ArrayList(onChangeConstraints)
+            noChange = onChangeConstraintsBefore.none { it.propagate(onChangeConstraints) }
         }
     }
 
@@ -68,24 +69,24 @@ private class TinyKotCP {
 
             val backups = backupDomains()
 
+            // search left branch with the fixed value
             notFixedVar.domain.fix(valueToFix)
-            fixPoint()
+            propagate(notFixedVar.domainChangeListeners)
             dfs(solutions)
 
             restoreDomains(backups)
 
+            // search right branch with the value removed
             notFixedVar.domain.remove(valueToFix)
             if (notFixedVar.domain.size() > 0) {
-                fixPoint()
+                propagate(notFixedVar.domainChangeListeners)
                 dfs(solutions)
             }
         }
     }
 
     private fun backupDomains(): List<Int> {
-        return variables.map {
-            v -> v.domain.size()
-        }
+        return variables.map { it.domain.size() }
     }
 
     private fun restoreDomains(backups: List<Int>) {
