@@ -54,7 +54,9 @@ class SparseSetIntDomain(private var min: Int, private var max: Int) : IntDomain
         return true
     }
 
-    override fun restore(rs: Int) {
+    fun backup() = size()
+
+    fun restore(rs: Int) {
         if (rs in 1..<cap + 1) {
             size = rs
             min = dense.slice(IntRange(0, rs - 1)).min()

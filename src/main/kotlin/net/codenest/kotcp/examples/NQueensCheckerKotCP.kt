@@ -60,7 +60,10 @@ private class TinyKotCP {
             return
         }
 
-        val notFixedVar = variables.firstOrNull { !it.domain.isFixed() }
+        val notFixedVar = variables
+            .filter { !it.domain.isFixed() }
+            .maxByOrNull { it.domainChangeListeners.size }
+
         if (notFixedVar == null) {
             // all variables are fixed, a solution is found
             solutions.add(variables.map { it.domain.min() })
@@ -86,7 +89,7 @@ private class TinyKotCP {
     }
 
     private fun backupDomains(): List<Int> {
-        return variables.map { it.domain.size() }
+        return variables.map { it.domain.backup() }
     }
 
     private fun restoreDomains(backups: List<Int>) {
