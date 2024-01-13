@@ -5,16 +5,16 @@ package net.codenest.kotcp.engine
  * and it is very time & space efficient to back up and restore the domain.
  */
 class SparseSetIntDomain(private var min: Int, private var max: Int) : IntDomain {
-    private val cap = max - min + 1
     private val offset = min
+    private val cap = max - min + 1
+    private var size = cap
     private val sparse = IntArray(cap)     // array to store the index of elements
     private val dense = IntArray(cap)      // array to store the actual elements
-    private var size = cap
 
     init {
-        for (i in min..<max + 1) {
-            sparse[i - offset] = i - offset
-            dense[i - offset] = i
+        for (i in 0..<cap) {
+            sparse[i] = i
+            dense[i] = i + offset
         }
     }
 
