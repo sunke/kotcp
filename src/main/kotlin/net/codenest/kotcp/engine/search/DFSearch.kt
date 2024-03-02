@@ -1,20 +1,23 @@
 package net.codenest.kotcp.engine.search
 
+import net.codenest.kotcp.engine.Solution
 import net.codenest.kotcp.engine.Variable
 import net.codenest.kotcp.engine.constraint.Constraint
 import java.util.*
 
-class DFSearch(private val variables: LinkedList<Variable>) {
+class DFSearch(private val variables: List<Variable>) {
 
-    fun dfs(solutions: MutableList<List<Int>>) {
+    fun dfs(): List<Solution<Int>> {
+        val solutions = ArrayList<Solution<Int>>()
+
         if (variables.any { it.domain.size() == 0 }) {
-            return
+            return solutions
         }
 
         val notFixedVar = variables.firstOrNull { !it.domain.isFixed() }
         if (notFixedVar == null) {
             // all variables are fixed, a solution is found
-            solutions.add(variables.map { it.domain.min() })
+            solutions.add(Solution(variables.associateWith { it.domain.min() }))
         } else {
             val valueToFix: Int = notFixedVar.domain.min()
 
@@ -23,7 +26,7 @@ class DFSearch(private val variables: LinkedList<Variable>) {
             // search left branch with the fixed value
             notFixedVar.domain.fix(valueToFix)
             propagate(notFixedVar.domainChangeListeners)
-            dfs(solutions)
+            solutions.addAll(dfs())
 
             restoreDomains(backups)
 
@@ -31,9 +34,10 @@ class DFSearch(private val variables: LinkedList<Variable>) {
             notFixedVar.domain.remove(valueToFix)
             if (notFixedVar.domain.size() > 0) {
                 propagate(notFixedVar.domainChangeListeners)
-                dfs(solutions)
+                solutions.addAll(dfs())
             }
         }
+        return solutions
     }
 
     private fun propagate(constraints: List<Constraint>) {
