@@ -11,20 +11,20 @@ class NotEqual(private val x: Variable, private val y: Variable, private val off
     }
 
     override fun propagate(onChangeConstraints: MutableList<Constraint>): Boolean {
+        var onChange = false
+
         if (x.domain.isFixed()) {
-            val removed = y.domain.remove(x.domain.min() - offset)
-            if (removed) {
+            onChange = y.domain.remove(x.domain.min() - offset)
+            if (onChange) {
                 onChangeConstraints.addAll(y.domainChangeListeners)
             }
-            return removed
-        }
-        if (y.domain.isFixed()) {
-            val removed = x.domain.remove(y.domain.min() + offset)
-            if (removed) {
+        } else if (y.domain.isFixed()) {
+            onChange = x.domain.remove(y.domain.min() + offset)
+            if (onChange) {
                 onChangeConstraints.addAll(x.domainChangeListeners)
             }
-            return removed
         }
-        return false
+
+        return onChange
     }
 }

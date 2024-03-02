@@ -5,7 +5,7 @@ import net.codenest.kotcp.engine.constraint.Constraint
 class Variable(n: Int) {
     val domainChangeListeners: MutableList<Constraint> = ArrayList()
 
-    var domain: IntDomain = SparseSetIntDomain(0, n - 1)
+    var domain  = SparseSetIntDomain(0, n - 1)
 
     override fun toString(): String {
         return "{ $domain | ${domainChangeListeners.size} listeners }"

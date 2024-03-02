@@ -1,20 +1,22 @@
 package net.codenest.kotcp.engine
 
+
 /**
  * Implement IntDomain with Spare Set. The advantages of Spare Set are it is very time efficient with CRUD operations;
  * and it is very time & space efficient to back up and restore the domain.
  */
+
 class SparseSetIntDomain(private var min: Int, private var max: Int) : IntDomain {
-    private val cap = max - min + 1
     private val offset = min
+    private val cap = max - min + 1
+    private var size = cap
     private val sparse = IntArray(cap)     // array to store the index of elements
     private val dense = IntArray(cap)      // array to store the actual elements
-    private var size = cap
 
     init {
-        for (i in min..<max + 1) {
-            sparse[i - offset] = i - offset
-            dense[i - offset] = i
+        for (i in 0..<cap) {
+            sparse[i] = i
+            dense[i] = i + offset
         }
     }
 
@@ -24,7 +26,8 @@ class SparseSetIntDomain(private var min: Int, private var max: Int) : IntDomain
 
     override fun size() = size
 
-    override fun contains(v: Int) = v in min..< max + 1 && sparse[v - offset] < size
+    override fun contains(v: Int) = v in min..< max + 1
+            && sparse[v - offset] < size
 
     override fun clear() {
         size = 0
@@ -54,7 +57,9 @@ class SparseSetIntDomain(private var min: Int, private var max: Int) : IntDomain
         return true
     }
 
-    override fun restore(rs: Int) {
+    fun backup() = size()
+
+    fun restore(rs: Int) {
         if (rs in 1..<cap + 1) {
             size = rs
             min = dense.slice(IntRange(0, rs - 1)).min()

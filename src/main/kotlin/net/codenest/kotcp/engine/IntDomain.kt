@@ -34,9 +34,17 @@ interface IntDomain {
      */
     fun isFixed(): Boolean
 
+    /**
+     * Only keep the given value, and remove all other values from the set.
+     *
+     * @param v the value to fix
+     */
     fun fix(v: Int): Boolean
 
+    /**
+     * Remove the give value.
+     *
+     * @param v the value to remove
+     */
     fun remove(v: Int): Boolean
-
-    fun restore(rs: Int)
 }
