@@ -1,13 +1,13 @@
 package net.codenest.kotcp.engine
 
 import net.codenest.kotcp.engine.constraint.Constraint
-import net.codenest.kotcp.engine.constraint.NotEqual
 import net.codenest.kotcp.engine.search.DFSearch
 import java.util.*
 
-class TinyKotCP {
-    val constraints = LinkedList<Constraint>()
-    val variables = LinkedList<Variable>()
+class Solver(
+    val constraints: MutableList<Constraint> = LinkedList<Constraint>(),
+    val variables: MutableList<Variable> = LinkedList<Variable>()
+) {
 
     fun makeVariable(domSize: Int): Variable {
         val x = Variable(domSize)
@@ -15,9 +15,8 @@ class TinyKotCP {
         return x
     }
 
-
-    fun notEqual(x: Variable, y: Variable, offset: Int = 0) {
-        constraints.add(NotEqual(x, y, offset))
+    fun post(constraint: Constraint) {
+        constraints.add(constraint)
     }
 
     fun solve(search: DFSearch): List<Solution<Int>> {
